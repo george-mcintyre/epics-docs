@@ -53,89 +53,74 @@
 
 # Grammar
 
+The grammar is given below as a set of production rules. In EBNF terms,
+`[ ... ]` denotes an optional element, `{ ... }` denotes zero or more
+repetitions, and alternatives are listed on separate lines. Literal terminals
+are shown in double quotes. References to other rules are hyperlinked.
+
+For writing an ACF file, start from the {token}`acf_file` rule.
+
 ## Top level
 
-```ebnf
-acf-file ::= asconfig ;
-
-asconfig ::= asconfig-item { asconfig-item } ;
-
-asconfig-item ::=
-      uag-def
-    | hag-def
-    | asg-def
-    | generic-top-level-item ;
+```{eval-rst}
+.. productionlist::
+   acf_file: `asconfig`
+   asconfig: `asconfig_item` { `asconfig_item` }
+   asconfig_item: `uag_def`
+                : `hag_def`
+                : `asg_def`
+                : `generic_top_level_item`
 ```
+
 ### UAG / HAG groups
 
-```ebnf
-uag-def ::= "UAG" uag-head [ uag-body ] ;
-
-uag-head ::= "(" STRING ")" ;
-
-uag-body ::= "{" uag-user-list "}" ;
-
-uag-user-list ::= STRING { "," STRING } ;
-```
-
-```ebnf
-hag-def ::= "HAG" hag-head [ hag-body ] ;
-
-hag-head ::= "(" STRING ")" ;
-
-hag-body ::= "{" hag-host-list "}" ;
-
-hag-host-list ::= STRING { "," STRING } ;
+```{eval-rst}
+.. productionlist::
+   uag_def: "UAG" `uag_head` [ `uag_body` ]
+   uag_head: "(" STRING ")"
+   uag_body: "{" `uag_user_list` "}"
+   uag_user_list: STRING { "," STRING }
+   hag_def: "HAG" `hag_head` [ `hag_body` ]
+   hag_head: "(" STRING ")"
+   hag_body: "{" `hag_host_list` "}"
+   hag_host_list: STRING { "," STRING }
 ```
 
 ### ASG (access security group)
 
-```ebnf
-asg-def ::= "ASG" asg-head [ asg-body ] ;
-
-asg-head ::= "(" STRING ")" ;
-
-asg-body ::= "{" asg-body-item { asg-body-item } "}" ;
-
-asg-body-item ::=
-      inp-config
-    | rule-config ;
+```{eval-rst}
+.. productionlist::
+   asg_def: "ASG" `asg_head` [ `asg_body` ]
+   asg_head: "(" STRING ")"
+   asg_body: "{" `asg_body_item` { `asg_body_item` } "}"
+   asg_body_item: `inp_config`
+                : `rule_config`
 ```
 
 #### INP config
 
-```ebnf
-inp-config ::= INP(link) "(" STRING ")" ;`
+```{eval-rst}
+.. productionlist::
+   inp_config: INP(link) "(" STRING ")"
 ```
 
 #### RULE config
-```ebnf
-rule-config ::= "RULE" rule-head [ rule-body ] ;
 
-rule-head ::=
-      "(" rule-head-mandatory "," rule-log-option ")"
-    | "(" rule-head-mandatory ")" ;
-
-rule-head-mandatory ::= INT "," STRING ;
-
-rule-log-option ::= STRING ;
-```
-```ebnf
-rule-body ::= "{" rule-list "}" ;
-
-rule-list ::= rule-list-item { rule-list-item } ;
-
-rule-list-item ::=
-      "UAG" "(" rule-uag-list ")"
-    | "HAG" "(" rule-hag-list ")"
-    | "CALC" "(" STRING ")"
-    | rule-generic-block-elem ;
-```
-
-```ebnf
-rule-uag-list ::= STRING { "," STRING } ;
-
-rule-hag-list ::= STRING { "," STRING } ;`
+```{eval-rst}
+.. productionlist::
+   rule_config: "RULE" `rule_head` [ `rule_body` ]
+   rule_head: "(" `rule_head_mandatory` "," `rule_log_option` ")"
+            : "(" `rule_head_mandatory` ")"
+   rule_head_mandatory: INT "," STRING
+   rule_log_option: STRING
+   rule_body: "{" `rule_list` "}"
+   rule_list: `rule_list_item` { `rule_list_item` }
+   rule_list_item: "UAG" "(" `rule_uag_list` ")"
+                 : "HAG" "(" `rule_hag_list` ")"
+                 : "CALC" "(" STRING ")"
+                 : `rule_generic_block_elem`
+   rule_uag_list: STRING { "," STRING }
+   rule_hag_list: STRING { "," STRING }
 ```
 
 ### Generic / future-proof syntax
@@ -145,70 +130,66 @@ These are the "catch-all" constructs that are **parsed** but currently **ignored
 #### Keyword classes
 
 These are parser-level categories used inside generic constructs:
-```ebnf
-keyword ::=
-      "UAG"
-    | "HAG"
-    | "CALC"
-    | non-rule-keyword ;
 
-non-rule-keyword ::=
-      "ASG"
-    | "RULE"
-    | INP(link) ;   (* INPA..INPU *)
+```{eval-rst}
+.. productionlist::
+   keyword: "UAG"
+          : "HAG"
+          : "CALC"
+          : `non_rule_keyword`
+   non_rule_keyword: "ASG"
+                   : "RULE"
+                   : INP(link)
 ```
+
+`INP(link)` above stands for the `INPA` .. `INPU` link terminals.
+
 #### Generic head (argument list)
 
-```ebnf
-generic-head ::=
-      "(" ")"
-    | "(" generic-element ")"
-    | "(" generic-list ")" ;
-
-generic-list ::= generic-element "," generic-element { "," generic-element } ;
-
-generic-element ::=
-      keyword
-    | STRING
-    | INT
-    | FLOAT ;
+```{eval-rst}
+.. productionlist::
+   generic_head: "(" ")"
+               : "(" `generic_element` ")"
+               : "(" `generic_list` ")"
+   generic_list: `generic_element` "," `generic_element` { "," `generic_element` }
+   generic_element: `keyword`
+                  : STRING
+                  : INT
+                  : FLOAT
 ```
+
 #### Generic blocks
 
-```ebnf
-generic-block ::=
-      "{" generic-element "}"
-    | "{" generic-list "}"
-    | "{" generic-block-list "}" ;
-
-generic-block-list ::= generic-block-elem { generic-block-elem } ;
-
-generic-block-elem ::=
-    generic-block-elem-name generic-head [ generic-block ] ;
-
-generic-block-elem-name ::= keyword | STRING ;`
+```{eval-rst}
+.. productionlist::
+   generic_block: "{" `generic_element` "}"
+                : "{" `generic_list` "}"
+                : "{" `generic_block_list` "}"
+   generic_block_list: `generic_block_elem` { `generic_block_elem` }
+   generic_block_elem: `generic_block_elem_name` `generic_head` [ `generic_block` ]
+   generic_block_elem_name: `keyword`
+                          : STRING
 ```
+
 #### Generic top-level items
 
 These are "unknown" top-level constructs, all of which are parsed and then ignored with a warning.
-```ebnf
-generic-top-level-item ::=
-      STRING generic-head generic-list-block
-    | STRING generic-head generic-block
-    | STRING generic-head ;
+
+```{eval-rst}
+.. productionlist::
+   generic_top_level_item: STRING `generic_head` `generic_list_block`
+                         : STRING `generic_head` `generic_block`
+                         : STRING `generic_head`
+   generic_list_block: "{" `generic_element` "}" "{" `generic_list` "}"
 ```
-where
-```ebnf
-generic-list-block ::=
-    "{" generic-element "}" "{" generic-list "}" ;
-```
+
 #### Generic blocks inside RULE bodies
 
 These are the "future predicates" in a RULE's body; they cause the RULE to be disabled with a warning, but they **must** still parse.
 
-```ebnf
-rule-generic-block-elem ::=
-    rule-generic-block-elem-name generic-head [ generic-block ] ;
-
-rule-generic-block-elem-name ::= non-rule-keyword | STRING ;
+```{eval-rst}
+.. productionlist::
+   rule_generic_block_elem: `rule_generic_block_elem_name` `generic_head` [ `generic_block` ]
+   rule_generic_block_elem_name: `non_rule_keyword`
+                               : STRING
 ```
